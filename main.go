@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,29 +12,34 @@ import (
 
 // GET '/' - Home page
 func home(w http.ResponseWriter, r *http.Request) {
+	// Add custom header 'Server: Go!'
+	w.Header().Add("Server", "Go!")
 	w.Write([]byte("Hello World!"))
 }
 
 // GET '/snippet/view/{id}' - View a snippet
 func snippetView(w http.ResponseWriter, r *http.Request) {
-	// Retur 404 if the id is not an integer above 0
+	// Return 404 if the id is not an integer above 0
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
 		return
 	}
 
-	msg := fmt.Sprintf("Wow, you just found snippet %d!", id)
-	w.Write([]byte(msg))
+	// http.ResponseWriter satisfies the io.Writer interface, so can be used directly with Fprintf!
+	fmt.Fprintf(w, "Wow, you just found snippet %d!", id)
 }
 
 // GET '/snippet/create' - Create a snippet?
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("_wow_, you just tried to create a snippet using a GET request. Try POST next time!"))
+	// http.ResponseWriter satisfies the io.Writer interface, so can be using with io.WriteString!
+	io.WriteString(w, "_wow_, you just tried to create a snippet using a GET request. Try POST next time!")
 }
 
 // POST '/snippet/create' - Create a snippet, but with POST this time!
 func snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+	// Send a 201 Created status code rather than 200 OK
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Wow, you just created a snippet using a POST request!"))
 }
 
@@ -43,7 +49,7 @@ func main() {
 	// Initialise a 'servemux', this is where route handlers will be registered
 	mux := http.NewServeMux()
 
-	// Register the handlers for the directories. '/{$}' is used so that home is no longer a catch-all - a 404 will be returned instead
+	// Register the handlers for the directories and specify the HTTP method. '/{$}' is used so that home is no longer a catch-all - a 404 will be returned instead
 	mux.HandleFunc("GET /{$}", home)
 	mux.HandleFunc("GET /snippet/create", snippetCreate)
 	mux.HandleFunc("POST /snippet/create", snippetCreatePost)
