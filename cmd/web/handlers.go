@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -11,9 +13,29 @@ import (
 
 // GET '/' - Home page
 func home(w http.ResponseWriter, r *http.Request) {
-	// Add custom header 'Server: Go!'
 	w.Header().Add("Server", "Go!")
-	w.Write([]byte("Hello World!"))
+
+	// Define the templates to be parsed, order doesn't matter as we are using ExecuteTemplate
+	files := []string{
+		"./ui/html/pages/base.tmpl.html",
+		"./ui/html/partials/nav.tpml.html",
+		"./ui/html/pages/home.tmpl.html",
+	}
+
+	// Add the template files into a template set. Handle error appropriately if it occurs
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Write the content of "base" template to the Response Body
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 // GET '/snippet/view/{id}' - View a snippet
@@ -25,19 +47,16 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// http.ResponseWriter satisfies the io.Writer interface, so can be used directly with Fprintf!
 	fmt.Fprintf(w, "Wow, you just found snippet %d!", id)
 }
 
 // GET '/snippet/create' - Create a snippet?
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	// http.ResponseWriter satisfies the io.Writer interface, so can be using with io.WriteString!
 	io.WriteString(w, "_wow_, you just tried to create a snippet using a GET request. Try POST next time!")
 }
 
 // POST '/snippet/create' - Create a snippet, but with POST this time!
 func snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-	// Send a 201 Created status code rather than 200 OK
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Wow, you just created a snippet using a POST request!"))
 }
