@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // ---- Handlers which serve their respective pages ---- //
@@ -12,9 +14,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello World!"))
 }
 
-// '/snippet/view' - View a snippet
+// '/snippet/view/{id}' - View a snippet
 func snippetView(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Wow, you just found a snippet!"))
+	// Retur 404 if the id is not an integer above 0
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	msg := fmt.Sprintf("Wow, you just found snippet %d!", id)
+	w.Write([]byte(msg))
 }
 
 // '/snippet/create' - Create a snippet?
@@ -30,8 +40,8 @@ func main() {
 
 	// Register the handlers for the directories. '/{$}' is used so that home is no longer a catch-all - a 404 will be returned instead
 	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("/snippet/view/{id}", snippetView) // {id} is a wildcard route pattern, it'll match any non-empty value in that segment. Also, use 'id' instead of 'snippetID' as this avoids 'stutter'
 
 	log.Print("starting server on :4000")
 
