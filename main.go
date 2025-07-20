@@ -9,12 +9,12 @@ import (
 
 // ---- Handlers which serve their respective pages ---- //
 
-// '/' - Home page
+// GET '/' - Home page
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello World!"))
 }
 
-// '/snippet/view/{id}' - View a snippet
+// GET '/snippet/view/{id}' - View a snippet
 func snippetView(w http.ResponseWriter, r *http.Request) {
 	// Retur 404 if the id is not an integer above 0
 	id, err := strconv.Atoi(r.PathValue("id"))
@@ -27,9 +27,14 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(msg))
 }
 
-// '/snippet/create' - Create a snippet?
+// GET '/snippet/create' - Create a snippet?
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Wow, you just created a snippet!"))
+	w.Write([]byte("_wow_, you just tried to create a snippet using a GET request. Try POST next time!"))
+}
+
+// POST '/snippet/create' - Create a snippet, but with POST this time!
+func snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Wow, you just created a snippet using a POST request!"))
 }
 
 // ----------------------------------------------------- //
@@ -39,9 +44,10 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Register the handlers for the directories. '/{$}' is used so that home is no longer a catch-all - a 404 will be returned instead
-	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/snippet/create", snippetCreate)
-	mux.HandleFunc("/snippet/view/{id}", snippetView) // {id} is a wildcard route pattern, it'll match any non-empty value in that segment. Also, use 'id' instead of 'snippetID' as this avoids 'stutter'
+	mux.HandleFunc("GET /{$}", home)
+	mux.HandleFunc("GET /snippet/create", snippetCreate)
+	mux.HandleFunc("POST /snippet/create", snippetCreatePost)
+	mux.HandleFunc("GET /snippet/view/{id}", snippetView) // {id} is a wildcard route pattern, it'll match any non-empty value in that segment. Also, use 'id' instead of 'snippetID' as this avoids 'stutter'
 
 	log.Print("starting server on :4000")
 
