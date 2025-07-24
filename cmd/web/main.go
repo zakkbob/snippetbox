@@ -1,11 +1,18 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
 
 func main() {
+	// Get network address from flag
+	addr := flag.String("addr", ":4000", "HTTP Network Address")
+
+	// Parse the command-line flags. Otherwise the default value will remain. This is why flag.String() returns a pointer
+	flag.Parse()
+
 	// Initialise a 'servemux', this is where route handlers will be registered
 	mux := http.NewServeMux()
 
@@ -24,10 +31,10 @@ func main() {
 	// mux.HandleFunc is syntactic sugar for this, so we can just use this directly instead
 	mux.Handle("GET /snippet/create", http.HandlerFunc(snippetCreate))
 
-	log.Print("starting server on :4000")
+	log.Printf("starting server on %s", *addr)
 
 	// Start a new web server on port 4000, using the servemux we just created
 	// Then, log an error if we get one, Fatal will terminate the program
-	err := http.ListenAndServe("localhost:4000", mux)
+	err := http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
 }
