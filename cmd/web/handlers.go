@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -12,7 +11,7 @@ import (
 // ---- Handlers which serve their respective pages ---- //
 
 // GET '/' - Home page
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go!")
 
 	// Define the templates to be parsed, order doesn't matter as we are using ExecuteTemplate
@@ -25,7 +24,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// Add the template files into a template set. Handle error appropriately if it occurs
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Print(err.Error())
+		app.logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -33,13 +32,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// Write the content of "base" template to the Response Body
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Print(err.Error())
+		app.logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
 // GET '/snippet/view/{id}' - View a snippet
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// Return 404 if the id is not an integer above 0
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
@@ -51,12 +50,12 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET '/snippet/create' - Create a snippet?
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "_wow_, you just tried to create a snippet using a GET request. Try POST next time!")
 }
 
 // POST '/snippet/create' - Create a snippet, but with POST this time!
-func snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Wow, you just created a snippet using a POST request!"))
 }
