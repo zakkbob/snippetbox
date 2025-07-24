@@ -2,11 +2,15 @@ package main
 
 import (
 	"flag"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main() {
+	// Initialise a new structured logger, along with its handler
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	// Get network address from flag
 	addr := flag.String("addr", ":4000", "HTTP Network Address")
 
@@ -31,10 +35,12 @@ func main() {
 	// mux.HandleFunc is syntactic sugar for this, so we can just use this directly instead
 	mux.Handle("GET /snippet/create", http.HandlerFunc(snippetCreate))
 
-	log.Printf("starting server on %s", *addr)
+	// Structured log, specifies a key-value pair
+	logger.Info("starting server", "address", *addr)
 
-	// Start a new web server on port 4000, using the servemux we just created
-	// Then, log an error if we get one, Fatal will terminate the program
+	// Start a new web server on configured port, using the servemux we just created
+	// Then, log an error if we get one, slog doesn't have an equivalent to Fatal(), so calling os.Exit(1) is necess:ary
 	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	logger.Error(err.Error())
+	os.Exit(1)
 }
