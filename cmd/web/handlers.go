@@ -24,16 +24,14 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Add the template files into a template set. Handle error appropriately if it occurs
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.logger.Error(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, r, err)
 		return
 	}
 
 	// Write the content of "base" template to the Response Body
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		app.logger.Error(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, r, err)
 	}
 }
 
