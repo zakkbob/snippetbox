@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/zakkbob/snippetbox/internal/models"
 )
 
 // ---- Handlers which serve their respective pages ---- //
@@ -44,7 +47,17 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Wow, you just found snippet %d!", id)
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.NotFound(w, r)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 // GET '/snippet/create' - Create a snippet?
