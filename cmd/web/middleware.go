@@ -25,7 +25,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		defer func() {
 			pv := recover()
 
-			if r != nil {
+			if pv != nil {
 				w.Header().Set("Connection", "close")
 				app.serverError(w, r, fmt.Errorf("%v", pv))
 			}
