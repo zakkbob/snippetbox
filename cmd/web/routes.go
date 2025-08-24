@@ -23,5 +23,5 @@ func (a *application) routes() http.Handler {
 	// mux.HandleFunc is syntactic sugar for this, so we can just use this directly instead
 	mux.Handle("GET /snippet/create", http.HandlerFunc(a.snippetCreate))
 
-	return commonHeaders(mux)
+	return a.logRequest(commonHeaders(mux))
 }
