@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -10,25 +9,6 @@ import (
 
 	"github.com/zakkbob/snippetbox/internal/models"
 )
-
-func (app *application) render(w http.ResponseWriter, r *http.Request, statusCode int, page string, data any) {
-	ts, ok := app.templateCache[page]
-	if !ok {
-		err := fmt.Errorf("the template %s does not exist", page)
-		app.serverError(w, r, err)
-	}
-
-	buf := new(bytes.Buffer)
-
-	err := ts.ExecuteTemplate(buf, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	w.WriteHeader(statusCode)
-	buf.WriteTo(w)
-}
 
 // GET '/' - Home page
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -40,9 +20,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := templateData{
-		Snippets: snippets,
-	}
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
 
 	app.render(w, r, http.StatusOK, "home.tmpl.html", data)
 }
@@ -66,9 +45,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := templateData{
-		Snippet: snippet,
-	}
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
 
 	app.render(w, r, http.StatusOK, "view.tmpl.html", data)
 }

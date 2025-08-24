@@ -10,8 +10,9 @@ import (
 
 // A holding structure for data we want to pass to templates, since only one piece of dynamic data can be passed
 type templateData struct {
-	Snippet  models.Snippet
-	Snippets []models.Snippet
+	CurrentYear int
+	Snippet     models.Snippet
+	Snippets    []models.Snippet
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
