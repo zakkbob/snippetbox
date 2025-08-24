@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -51,7 +50,9 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 // GET '/snippet/create' - Create a snippet?
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "_wow_, you just tried to create a snippet using a GET request. Try POST next time!")
+	data := app.newTemplateData(r)
+
+	app.render(w, r, http.StatusOK, "create.tmpl.html", data)
 }
 
 // POST '/snippet/create' - Create a snippet, but with POST this time!
