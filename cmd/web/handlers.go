@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"io"
 	"net/http"
 	"strconv"
@@ -11,7 +10,20 @@ import (
 	"github.com/zakkbob/snippetbox/internal/models"
 )
 
-// ---- Handlers which serve their respective pages ---- //
+func (app *application) render(w http.ResponseWriter, r *http.Request, statusCode int, page string, data any) {
+	ts, ok := app.templateCache[page]
+	if !ok {
+		err := fmt.Errorf("the template %s does not exist", page)
+		app.serverError(w, r, err)
+	}
+
+	w.WriteHeader(statusCode)
+
+	err := ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+}
 
 // GET '/' - Home page
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -23,29 +35,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Define the templates to be parsed, order doesn't matter as we are using ExecuteTemplate
-	files := []string{
-		"./ui/html/pages/base.tmpl.html",
-		"./ui/html/partials/nav.tpml.html",
-		"./ui/html/pages/home.tmpl.html",
-	}
-
-	// Add the template files into a template set. Handle error appropriately if it occurs
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
 	data := templateData{
 		Snippets: snippets,
 	}
 
-	// Write the content of "base" template to the Response Body
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	app.render(w, r, http.StatusOK, "home.tmpl.html", data)
 }
 
 // GET '/snippet/view/{id}' - View a snippet
@@ -67,26 +61,11 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/pages/base.tmpl.html",
-		"./ui/html/partials/nav.tpml.html",
-		"./ui/html/pages/view.tmpl.html",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
 	data := templateData{
 		Snippet: snippet,
 	}
 
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	app.render(w, r, http.StatusOK, "view.tmpl.html", data)
 }
 
 // GET '/snippet/create' - Create a snippet?
