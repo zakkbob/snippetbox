@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -17,12 +18,16 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, statusCod
 		app.serverError(w, r, err)
 	}
 
-	w.WriteHeader(statusCode)
+	buf := new(bytes.Buffer)
 
-	err := ts.ExecuteTemplate(w, "base", data)
+	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
 		app.serverError(w, r, err)
+		return
 	}
+
+	w.WriteHeader(statusCode)
+	buf.WriteTo(w)
 }
 
 // GET '/' - Home page
