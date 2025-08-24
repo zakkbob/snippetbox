@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (a *application) routes() http.Handler {
+func (app *application) routes() http.Handler {
 	// Initialise a 'servemux', this is where route handlers will be registered
 	mux := http.NewServeMux()
 
@@ -16,12 +16,12 @@ func (a *application) routes() http.Handler {
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	// Register the handlers for the directories and specify the HTTP method. '/{$}' is used so that home is no longer a catch-all - a 404 will be returned instead
-	mux.HandleFunc("GET /{$}", a.home)
-	mux.HandleFunc("POST /snippet/create", a.snippetCreatePost)
-	mux.HandleFunc("GET /snippet/view/{id}", a.snippetView) // {id} is a wildcard route pattern, it'll match any non-empty value in that segment. Also, use 'id' instead of 'snippetID' as this avoids 'stutter'
+	mux.HandleFunc("GET /{$}", app.home)
+	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
+	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView) // {id} is a wildcard route pattern, it'll match any non-empty value in that segment. Also, use 'id' instead of 'snippetID' as this avoids 'stutter'
 
 	// mux.HandleFunc is syntactic sugar for this, so we can just use this directly instead
-	mux.Handle("GET /snippet/create", http.HandlerFunc(a.snippetCreate))
+	mux.Handle("GET /snippet/create", http.HandlerFunc(app.snippetCreate))
 
-	return a.logRequest(commonHeaders(mux))
+	return app.recoverPanic(app.logRequest(commonHeaders(mux)))
 }
