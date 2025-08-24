@@ -23,29 +23,29 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
+	// Define the templates to be parsed, order doesn't matter as we are using ExecuteTemplate
+	files := []string{
+		"./ui/html/pages/base.tmpl.html",
+		"./ui/html/partials/nav.tpml.html",
+		"./ui/html/pages/home.tmpl.html",
 	}
 
-	// // Define the templates to be parsed, order doesn't matter as we are using ExecuteTemplate
-	// files := []string{
-	// "./ui/html/pages/base.tmpl.html",
-	// "./ui/html/partials/nav.tpml.html",
-	// "./ui/html/pages/home.tmpl.html",
-	// }
-	//
-	// // Add the template files into a template set. Handle error appropriately if it occurs
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// app.serverError(w, r, err)
-	// return
-	// }
-	//
-	// // Write the content of "base" template to the Response Body
-	// err = ts.ExecuteTemplate(w, "base", nil)
-	// if err != nil {
-	// app.serverError(w, r, err)
-	// }
+	// Add the template files into a template set. Handle error appropriately if it occurs
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := templateData{
+		Snippets: snippets,
+	}
+
+	// Write the content of "base" template to the Response Body
+	err = ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }
 
 // GET '/snippet/view/{id}' - View a snippet
