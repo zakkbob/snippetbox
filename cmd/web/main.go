@@ -25,11 +25,8 @@ func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 
-	// Parse the command-line flags. Otherwise the default value will remain.
-	// This is why flag.String() returns a pointer
 	flag.Parse()
 
-	// Initialise a new structured logger, along with its handler
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	db, err := openDB(*dsn)
@@ -54,8 +51,6 @@ func main() {
 
 	logger.Info("starting server", "address", *addr)
 
-	// Log an error if we get one, slog doesn't have an equivalent to Fatal(),
-	// so calling os.Exit(1) is necessary
 	err = http.ListenAndServe(*addr, app.routes())
 	logger.Error(err.Error())
 	os.Exit(1)

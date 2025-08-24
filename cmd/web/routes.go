@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (a *application) routes() *http.ServeMux {
+func (a *application) routes() http.Handler {
 	// Initialise a 'servemux', this is where route handlers will be registered
 	mux := http.NewServeMux()
 
@@ -23,5 +23,5 @@ func (a *application) routes() *http.ServeMux {
 	// mux.HandleFunc is syntactic sugar for this, so we can just use this directly instead
 	mux.Handle("GET /snippet/create", http.HandlerFunc(a.snippetCreate))
 
-	return mux
+	return commonHeaders(mux)
 }
