@@ -48,20 +48,28 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "view.tmpl.html", data)
 }
 
-// GET '/snippet/create' - Create a snippet?
+// GET '/snippet/create' - Create a snippet (form)
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 
 	app.render(w, r, http.StatusOK, "create.tmpl.html", data)
 }
 
-// POST '/snippet/create' - Create a snippet, but with POST this time!
+// POST '/snippet/create' - Create a snippet
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-	var (
-		title   = "Test snippet"
-		content = "Hello person reading this"
-		expires = 7
-	)
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
@@ -71,5 +79,3 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
-
-// ----------------------------------------------------- //
