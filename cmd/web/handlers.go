@@ -158,7 +158,16 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 // POST '/user/logout' - Logout of account
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Logout of account")
+	err := app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	app.sessionManager.Remove(r.Context(), "authenticatedUserID")
+	app.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 type snippetCreateForm struct {
