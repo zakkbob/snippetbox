@@ -49,6 +49,31 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "view.tmpl.html", data)
 }
 
+// GET '/user/signup' - Create an account (form)
+func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Create an account (form)")
+}
+
+// POST '/user/signup' - Create an account
+func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Create an account")
+}
+
+// GET '/user/login' - Login to an account (form)
+func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Login to an account (form)")
+}
+
+// POST '/user/login' - Login to an account
+func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Login to an account")
+}
+
+// POST '/user/logout' - Logout of account
+func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Logout of account")
+}
+
 type snippetCreateForm struct {
 	Title               string `form:"title"`
 	Content             string `form:"content"`
