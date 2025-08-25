@@ -15,16 +15,16 @@ func (app *application) routes() http.Handler {
 	// Remove the 'static/' prefix before it reaches the fileserver
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	handleSessions := alice.New(app.sessionManager.LoadAndSave)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
-	mux.Handle("GET /{$}", handleSessions.ThenFunc(app.home))
-	mux.Handle("GET /snippet/view/{id}", handleSessions.ThenFunc(app.snippetView))
-	mux.Handle("GET /user/signup", handleSessions.ThenFunc(app.userSignup))
-	mux.Handle("POST /user/signup", handleSessions.ThenFunc(app.userSignupPost))
-	mux.Handle("GET /user/login", handleSessions.ThenFunc(app.userLogin))
-	mux.Handle("POST /user/login", handleSessions.ThenFunc(app.userLoginPost))
+	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET /snippet/view/{id}", dynamic.ThenFunc(app.snippetView))
+	mux.Handle("GET /user/signup", dynamic.ThenFunc(app.userSignup))
+	mux.Handle("POST /user/signup", dynamic.ThenFunc(app.userSignupPost))
+	mux.Handle("GET /user/login", dynamic.ThenFunc(app.userLogin))
+	mux.Handle("POST /user/login", dynamic.ThenFunc(app.userLoginPost))
 
-	requireAuth := handleSessions.Append(app.requireAuthentication)
+	requireAuth := dynamic.Append(app.requireAuthentication)
 
 	mux.Handle("GET /snippet/create", requireAuth.ThenFunc(app.snippetCreate))
 	mux.Handle("POST /snippet/create", requireAuth.ThenFunc(app.snippetCreatePost))
