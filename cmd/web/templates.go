@@ -11,11 +11,12 @@ import (
 
 // A holding structure for data we want to pass to templates, since only one piece of dynamic data can be passed
 type templateData struct {
-	CurrentYear int
-	Snippet     models.Snippet
-	Snippets    []models.Snippet
-	Form        any
-	Flash       string
+	CurrentYear     int
+	Snippet         models.Snippet
+	Snippets        []models.Snippet
+	Form            any
+	Flash           string
+	IsAuthenticated bool
 }
 
 func humanDate(t time.Time) string {

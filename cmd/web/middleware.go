@@ -5,6 +5,20 @@ import (
 	"net/http"
 )
 
+func (app *application) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !app.IsAuthenticated(r) {
+			app.sessionManager.Put(r.Context(), "flash", "You must be logged in to use this page")
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+
+		w.Header().Add("Cache-Control", "no-store")
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
